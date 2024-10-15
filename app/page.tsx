@@ -7,9 +7,26 @@ import {
   CardHeader,
 } from "@/components/ui/card"
 
+import { collection, getDocs } from "firebase/firestore"; 
+import { initializeFirestore } from "@/lib/utils";
+
 async function getCategories(): Promise<Category[]> {
-  const { data } = await (await fetch(`${process.env.API_SITE}/api/categories`, { next: { revalidate: 3600 } })).json()
-  return data
+  const allDocs: Category[] = [];
+
+  const querySnapshot = await getDocs(
+    collection(
+      initializeFirestore(), 
+      "registry/gbhVPR3h0N3tx6G7moo2/categories"
+    )
+  );
+  
+  querySnapshot.forEach((doc) => {
+      const { name, image } = doc.data()
+      const cat = { name, image, id: doc.id }
+      allDocs.push(cat);
+  });
+
+  return allDocs
 }
 
 export default async function Homepage() {

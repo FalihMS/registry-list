@@ -1,17 +1,44 @@
 import { Button } from "@/components/ui/button";
 import { Category, Item } from "@/lib/types";
-import { numberToRupiah } from "@/lib/utils";
+import { initializeFirestore, numberToRupiah } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore"; 
 
 
 async function getCategory(id: string): Promise<Category> {
-    const { data } = await (await fetch(`${process.env.API_SITE}/api/category?id=${id}`, { next: { revalidate: 3600 } })).json()
-    return data
+    const docRef = doc(
+        initializeFirestore(),
+        "registry/gbhVPR3h0N3tx6G7moo2/categories/", id + "" 
+    );
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        const { name, image } = docSnap.data()
+        return { name, image, id: docSnap.id }
+
+    }else{
+        return {
+            name: "", 
+            image: "", 
+            id: ""
+        }
+    }
+
 }
 
 async function getItems(id: string): Promise<Item[]> {
-    const { data } = await (await fetch(`${process.env.API_SITE}/api/items?id=${id}`, { next: { revalidate: 3600 } })).json()
-    return data
+    const allDocs: Item[] = [];
+    const querySnapshot = await getDocs(
+        collection(
+            initializeFirestore(),
+            `registry/gbhVPR3h0N3tx6G7moo2/categories/${id}/items`
+        )
+    );
+    querySnapshot.forEach((doc) => {
+        const { name, brand, amount, link, image } = doc.data()
+        allDocs.push({ name, brand, amount, link, image, id: doc.id });
+    });
+
+    return allDocs
 }
 
 export default async function Home({
@@ -69,7 +96,7 @@ export default async function Home({
     );
 }
 
-async function ItemList({id}:{id:string}) {
+async function ItemList({ id }: { id: string }) {
     const items = await getItems(id)
     return (
         <ul className="grid">
@@ -90,7 +117,7 @@ function ItemRow(props: Item) {
             </div>
             <div className="py-4 pr-4 sm:px-4 flex justify-between items-center grow gap-8 text-sm">
                 <div className="lg:basis-1/3 flex flex-col lg:flex-row justify-between lg:justify-around lg:items-center h-full lg:grow">
-                    <h1 className="lg:flex-1 lg:font-heading lg grow">{props.brand == "" ? "" : <span className="inline font-heading lg:hidden">{props.brand}, </span> } {props.name}</h1>
+                    <h1 className="lg:flex-1 lg:font-heading lg grow">{props.brand == "" ? "" : <span className="inline font-heading lg:hidden">{props.brand}, </span>} {props.name}</h1>
                     <h1 className="lg:hidden">Rp. {numberToRupiah(props.amount)}</h1>
                 </div>
                 <div className="lg:basis-2/3 flex flex-col lg:flex-row justify-around lg:justify-around lg:items-center h-full lg:grow">
