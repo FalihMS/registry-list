@@ -1,101 +1,104 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Category } from "@/lib/types";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card"
 
-export default function Home() {
+async function getCategories(): Promise<Category[]> {
+  const { data } = await (await fetch(`${process.env.API_SITE}/api/categories`, { next: { revalidate: 3600 } })).json()
+  return data
+}
+
+export default async function Homepage() {
+  const categories = await getCategories()
+  console.log(categories)
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <main className="flex h-screen py-4 lg:py-10 mx-4 justify-center">
+      <MainLayout>
+        <HeaderLayout>
+          <HeaderImage />
+          <h1 className="text-xl sm:text-4xl text-center font-heading">Baby Registry List</h1>
+        </HeaderLayout>
+        <ContentLayout>
+          <CategoryList data={categories} />
+        </ContentLayout>
+      </MainLayout>
+    </main>
+  )
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+function MainLayout({ children }: { children: JSX.Element | JSX.Element[] }) {
+  return (
+    <div className="h-full w-full bg-black grid md:grid-cols-2 lg:grid-cols-3 border-2 divide-y-2 sm:divide-y-0 sm:divide-x-2 shadow-light overflow-y-scroll">
+      {children}
     </div>
-  );
+  )
+}
+
+function HeaderLayout({ children }: { children: JSX.Element | JSX.Element[] }) {
+  return (
+    <div className="bg-main px-10 py-5 sm:py-10 flex flex-col gap-5 sm:gap-10 sm:justify-center">
+      {children}
+    </div>
+  )
+}
+
+function ContentLayout({ children }: { children: JSX.Element | JSX.Element[] }) {
+  return (
+    <div className="lg:col-span-2 bg-white p-10 sm:h-full sm:overflow-y-scroll">
+      {children}
+    </div>
+  )
+}
+
+function HeaderImage() {
+  return (
+    <div className="w-full aspect-video lg:aspect-square px-8 py-4">
+      <img
+        className="aspect-square object-cover border-2 border-border"
+        src="https://images.unsplash.com/photo-1498159551354-e44d84854c2f?q=80&w=2808&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt=""
+      />
+    </div>
+
+  )
+}
+
+async function CategoryList({ data }: { data: Category[] }) {
+  return (
+    <ul className="grid lg:grid-cols-2 xl:grid-cols-3 gap-5">
+      {
+        data.map((category: Category) => (
+          <CategoryCard key={category.id} {...category} />
+        ))
+      }
+    </ul>
+  )
+}
+
+function CategoryCard(category: Category) {
+  return (
+    <li className="border-2 border-border shadow-light flex flex-col">
+      <Card>
+        <CardHeader>
+          <img className="w-full aspect-square object-cover border-2 border-border" src="https://images.unsplash.com/photo-1522771930-78848d9293e8?q=80&w=2448&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="" />
+
+        </CardHeader>
+        <CardContent className="text-center">
+          <h1 className="font-heading text-lg sm:text-xl text-white">{category.name}</h1>
+        </CardContent>
+        <CardFooter>
+          <a className="grow" href={`/item/${category.id}`}>
+            <Button className="w-full" size={"sm"} >
+              View Item
+            </Button>
+          </a>
+        </CardFooter>
+      </Card>
+    </li>
+  )
 }
